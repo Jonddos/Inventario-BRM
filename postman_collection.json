@@ -1,141 +1,203 @@
 {
   "info": {
-    "name": "Inventario API",
+    "name": "Inventario API (Swagger + Facturas + Roles)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Register",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
+      "name": "AUTH",
+      "item": [
+        {
+          "name": "Register (Admin o Client)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jonathan\",\n  \"email\": \"jonathan@example.com\",\n  \"password\": \"123456\",\n  \"role\": \"ADMIN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            }
           }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"name\": \"Pilar\",\n  \"email\": \"pilar@example.com\",\n  \"password\": \"123456\",\n  \"role\": \"ADMIN\"\n}"
         },
-        "url": {
-          "raw": "{{base_url}}/auth/register",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "auth",
-            "register"
-          ]
-        }
-      }
-    },
-    {
-      "name": "Login",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jonathan@example.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            }
           }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"pilar@example.com\",\n  \"password\": \"123456\"\n}"
+        }
+      ]
+    },
+
+    {
+      "name": "PRODUCTOS (ADMIN)",
+      "item": [
+        {
+          "name": "Listar productos",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products",
+              "host": ["{{base_url}}"],
+              "path": ["products"]
+            }
+          }
         },
-        "url": {
-          "raw": "{{base_url}}/auth/login",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "auth",
-            "login"
-          ]
-        }
-      }
-    },
-    {
-      "name": "List Products",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{token}}"
+        {
+          "name": "Crear producto (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lote\": \"L001\",\n  \"nombre\": \"Producto X\",\n  \"precio\": 1000,\n  \"cantidad\": 5,\n  \"fechaIngreso\": \"2025-01-01\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/products",
+              "host": ["{{base_url}}"],
+              "path": ["products"]
+            }
           }
-        ],
-        "url": {
-          "raw": "{{base_url}}/products",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "products"
-          ]
-        }
-      }
-    },
-    {
-      "name": "Create Product",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{token}}"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"lote\": \"L001\",\n  \"nombre\": \"Producto X\",\n  \"precio\": 1000,\n  \"cantidad\": 5,\n  \"fechaIngreso\": \"2025-01-01\"\n}"
         },
-        "url": {
-          "raw": "{{base_url}}/products",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "products"
-          ]
-        }
-      }
-    },
-    {
-      "name": "Purchase",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "Authorization",
-            "value": "Bearer {{token}}"
+        {
+          "name": "Actualizar producto (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lote\": \"L002\",\n  \"nombre\": \"Producto Actualizado\",\n  \"precio\": 1500,\n  \"cantidad\": 10,\n  \"fechaIngreso\": \"2025-01-02\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/products/1",
+              "host": ["{{base_url}}"],
+              "path": ["products", "1"]
+            }
           }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"cantidad\": 2\n    }\n  ]\n}"
         },
-        "url": {
-          "raw": "{{base_url}}/purchases",
-          "host": [
-            "{{base_url}}"
-          ],
-          "path": [
-            "purchases"
-          ]
+        {
+          "name": "Eliminar producto (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/1",
+              "host": ["{{base_url}}"],
+              "path": ["products", "1"]
+            }
+          }
         }
-      }
+      ]
+    },
+
+    {
+      "name": "COMPRAS (CLIENT)",
+      "item": [
+        {
+          "name": "Crear compra (CLIENT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"productId\": 1,\n      \"cantidad\": 2\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/purchases",
+              "host": ["{{base_url}}"],
+              "path": ["purchases"]
+            }
+          }
+        },
+        {
+          "name": "Mi historial de compras (CLIENT)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/purchases/my",
+              "host": ["{{base_url}}"],
+              "path": ["purchases", "my"]
+            }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "COMPRAS (ADMIN)",
+      "item": [
+        {
+          "name": "Ver todas las compras (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/purchases/admin",
+              "host": ["{{base_url}}"],
+              "path": ["purchases", "admin"]
+            }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "FACTURA",
+      "item": [
+        {
+          "name": "Obtener factura por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/purchases/1/invoice",
+              "host": ["{{base_url}}"],
+              "path": ["purchases", "1", "invoice"]
+            }
+          }
+        }
+      ]
     }
   ],
+
   "variable": [
     {
       "key": "base_url",

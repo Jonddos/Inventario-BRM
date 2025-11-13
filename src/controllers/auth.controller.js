@@ -16,6 +16,8 @@ exports.register = async (req, res, next) => {
       return res.status(400).json({ message: error.details[0].message });
     }
 
+    value.email = value.email.toLowerCase();
+
     const existing = await User.findOne({ where: { email: value.email } });
     if (existing) {
       return res.status(409).json({ message: "El correo ya está registrado" });
@@ -44,6 +46,8 @@ exports.login = async (req, res, next) => {
     if (error) {
       return res.status(400).json({ message: error.details[0].message });
     }
+
+    value.email = value.email.toLowerCase();
 
     const user = await User.findOne({ where: { email: value.email } });
     if (!user) {

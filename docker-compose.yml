@@ -32,7 +32,7 @@ services:
       DB_NAME: inventario_db
       DB_USER: postgres
       DB_PASSWORD: postgres
-      JWT_SECRET: super_secreto_cambia_esto
+      JWT_SECRET: JonathanInventariosApiSecretKey
     ports:
       - "3000:3000"
     networks:

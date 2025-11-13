@@ -1,5 +1,6 @@
 const Joi = require("joi");
-const { Purchase, PurchaseItem, Product, User } = require("../models");
+const { Purchase, PurchaseItem, Product, User, Invoice  } = require("../models");
+const generateInvoiceNumber = require("../utils/generateInvoiceNumber");
 
 const purchaseSchema = Joi.object({
   items: Joi.array()
@@ -24,8 +25,8 @@ exports.createPurchase = async (req, res, next) => {
 
     const userId = req.user.id;
     const purchase = await Purchase.create(
-      { userId, total: 0 },
-      { transaction: t }
+        { userId, total: 0 },
+        { transaction: t }
     );
 
     let total = 0;
@@ -52,44 +53,61 @@ exports.createPurchase = async (req, res, next) => {
       total += precioUnitario * item.cantidad;
 
       await PurchaseItem.create(
-        {
-          purchaseId: purchase.id,
-          productId: product.id,
-          cantidad: item.cantidad,
-          precioUnitario,
-        },
-        { transaction: t }
+          {
+            purchaseId: purchase.id,
+            productId: product.id,
+            cantidad: item.cantidad,
+            precioUnitario,
+          },
+          { transaction: t }
       );
 
       await product.update(
-        { cantidad: product.cantidad - item.cantidad },
-        { transaction: t }
+          { cantidad: product.cantidad - item.cantidad },
+          { transaction: t }
       );
     }
 
     await purchase.update({ total }, { transaction: t });
+
+    const invoiceNumber = await generateInvoiceNumber();
+
+    const invoice = await Invoice.create(
+        {
+          number: invoiceNumber,
+          purchaseId: purchase.id,
+          userId,
+          total,
+        },
+        { transaction: t }
+    );
+
     await t.commit();
 
     const fullPurchase = await Purchase.findByPk(purchase.id, {
       include: [
         { model: PurchaseItem, include: [Product] },
         { model: User, attributes: ["id", "name", "email"] },
+        { model: Invoice },
       ],
     });
 
-    res.status(201).json(fullPurchase);
+    return res.status(201).json({
+      message: "Compra realizada exitosamente",
+      compra: fullPurchase,
+      factura: invoice,
+    });
   } catch (err) {
     await t.rollback();
     next(err);
   }
 };
 
-// Historial de compras del cliente autenticado
 exports.getMyPurchases = async (req, res, next) => {
   try {
     const purchases = await Purchase.findAll({
       where: { userId: req.user.id },
-      include: [{ model: PurchaseItem, include: [Product] }],
+      include: [{ model: PurchaseItem, include: [Product] }, { model: Invoice }],
       order: [["createdAt", "DESC"]],
     });
     res.json(purchases);
@@ -98,13 +116,13 @@ exports.getMyPurchases = async (req, res, next) => {
   }
 };
 
-// Vista admin: todas las compras
 exports.getAllPurchases = async (req, res, next) => {
   try {
     const purchases = await Purchase.findAll({
       include: [
         { model: User, attributes: ["id", "name", "email"] },
         { model: PurchaseItem, include: [Product] },
+        { model: Invoice },
       ],
       order: [["createdAt", "DESC"]],
     });
@@ -114,13 +132,13 @@ exports.getAllPurchases = async (req, res, next) => {
   }
 };
 
-// Factura detallada
 exports.getInvoice = async (req, res, next) => {
   try {
     const purchase = await Purchase.findByPk(req.params.id, {
       include: [
         { model: User, attributes: ["id", "name", "email"] },
         { model: PurchaseItem, include: [Product] },
+        { model: Invoice },
       ],
     });
 
@@ -129,17 +147,17 @@ exports.getInvoice = async (req, res, next) => {
     }
 
     if (
-      req.user.role !== "ADMIN" &&
-      purchase.userId !== req.user.id
+        req.user.role !== "ADMIN" &&
+        purchase.userId !== req.user.id
     ) {
       return res
-        .status(403)
-        .json({ message: "No tiene acceso a esta factura" });
+          .status(403)
+          .json({ message: "No tiene acceso a esta factura" });
     }
 
     const factura = {
-      id: purchase.id,
-      fecha: purchase.createdAt,
+      numero: purchase.Invoice.number,
+      fecha: purchase.Invoice.createdAt,
       cliente: purchase.User,
       productos: purchase.PurchaseItems.map((item) => ({
         nombre: item.Product.nombre,
@@ -148,7 +166,7 @@ exports.getInvoice = async (req, res, next) => {
         precioUnitario: item.precioUnitario,
         subtotal: item.cantidad * item.precioUnitario,
       })),
-      total: purchase.total,
+      total: purchase.Invoice.total,
     };
 
     res.json(factura);

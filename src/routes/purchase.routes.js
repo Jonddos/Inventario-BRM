@@ -3,6 +3,7 @@ const router = express.Router();
 const purchaseController = require("../controllers/purchase.controller");
 const auth = require("../middlewares/auth");
 const isAdmin = require("../middlewares/isAdmin");
+const isClient = require("../middlewares/isClient"); // <-- nuevo
 
 /**
  * @swagger
@@ -15,7 +16,7 @@ const isAdmin = require("../middlewares/isAdmin");
  * @swagger
  * /purchases:
  *   post:
- *     summary: Crear una compra (CLIENT)
+ *     summary: Crear una compra (solo CLIENT)
  *     tags: [Compras]
  *     security:
  *       - bearerAuth: []
@@ -48,26 +49,30 @@ const isAdmin = require("../middlewares/isAdmin");
  *         description: Compra creada exitosamente
  *       400:
  *         description: Datos inválidos o inventario insuficiente
+ *       403:
+ *         description: Solo CLIENT puede realizar compras
  *       401:
  *         description: Token requerido
  */
-router.post("/", auth, purchaseController.createPurchase);
+router.post("/", auth, isClient, purchaseController.createPurchase);
 
 /**
  * @swagger
  * /purchases/my:
  *   get:
- *     summary: Obtener historial de compras del usuario autenticado (CLIENT)
+ *     summary: Obtener historial de compras del usuario autenticado (solo CLIENT)
  *     tags: [Compras]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Historial recuperado exitosamente
+ *       403:
+ *         description: Solo CLIENT puede ver su historial
  *       401:
  *         description: Token requerido
  */
-router.get("/my", auth, purchaseController.getMyPurchases);
+router.get("/my", auth, isClient, purchaseController.getMyPurchases);
 
 /**
  * @swagger
@@ -107,7 +112,7 @@ router.get("/admin", auth, isAdmin, purchaseController.getAllPurchases);
  *       200:
  *         description: Factura generada exitosamente
  *       403:
- *         description: Acceso denegado. Solo ADMIN o el dueño de la compra
+ *         description: Solo ADMIN o el dueño de la compra pueden ver la factura
  *       404:
  *         description: Compra no encontrada
  *       401:

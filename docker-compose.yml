@@ -1,0 +1,45 @@
+
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    container_name: inventario-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: inventario_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - inventario-net
+
+  api:
+    build: .
+    container_name: inventario-api
+    restart: always
+    depends_on:
+      - db
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_DIALECT: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: inventario_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: super_secreto_cambia_esto
+    ports:
+      - "3000:3000"
+    networks:
+      - inventario-net
+
+networks:
+  inventario-net:
+
+volumes:
+  postgres_data:
